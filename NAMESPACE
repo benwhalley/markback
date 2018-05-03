@@ -1,0 +1,7 @@
+exportPattern("^[[:alpha:]]+")
+importFrom(magrittr,"%>%")
+importFrom(magrittr,"%$%")
+import(dplyr)
+import(ggplot2)
+import(stringr)
+

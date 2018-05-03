@@ -1,0 +1,15 @@
+Package: markback
+Type: Package
+Title: Automates marking collation and feedback from a simple markdown format
+Version: 0.0.1
+Author: Ben Whalley
+Maintainer: Ben Whalley <ben.whalley@plymouth.ac.uk>
+Description: More about what it does (maybe more than one line)
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports: 
+  tidyverse,
+  pander (>= 0.6.1),
+  testthat
+RoxygenNote: 6.0.1
