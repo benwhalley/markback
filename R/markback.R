@@ -126,17 +126,17 @@ partition_yaml_front_matter <- function(input_lines) {
 #' @import magrittr
 #' @import stringr
 proc.student <- function(student, components, weighting){
-  # components <- config$components
-  # weighting <- config$weighting
-  # student <- all.students[[5]]
+  # components <- config$components; weighting <- config$weighting; student <- all.students[[1]]
   student.name <- rvest::html_text(rvest::html_node(student, 'h1'))
   student.id <- rvest::html_attr(student, 'id')
   participant <- ifelse(str_detect(student.id, "participant"), str_extract(student.id, '\\d{8,12}+'), NA)
   sections <- rvest::html_nodes(student, '.section')
   section.titles <- rvest::html_text(rvest::html_nodes(sections, 'h2'))
-  section.contents <-
-    purrr::map(sections, ~ as.character(rvest::html_nodes(.x, ':not(h2)')))
 
+  section.contents <-
+    purrr::map(sections, ~ as.character(.x))
+
+  # section.contents
   attr.grades <- dplyr::bind_rows(purrr::map2(sections, 1:length(sections),
                             ~rvest::html_attr(.x, 'grade') %>%
                               as_data_frame() %>% mutate(section=.y)))
@@ -218,7 +218,7 @@ save.grades <- function(grades, output_folder='.'){
 # Accepts a processed student <- the result of the proc.student function
 #' @import magrittr
 make.feedbac.doc <- function(student.res, assignment, output_folder, clean=T, quiet=T){
-  # student.res <- res[[2]]
+  # student.res <- results[[1]]
   # assignment <- "test"
   student.id <- student.res$comments$id %>%
     dplyr::first()
@@ -228,7 +228,7 @@ make.feedbac.doc <- function(student.res, assignment, output_folder, clean=T, qu
   grades <- student.res$grades %>% ungroup() %>% select(component, grade.numeric, grade.letter)
 
   comments <- student.res$comments %>%
-    mutate(section = pander::pandoc.header.return(section, 2)) %>%
+    mutate(section = "") %>%  # pander::pandoc.header.return(section, 2)
     transmute(x = paste(section, comment.md, sep="\n\n")) %>%
     pull(x) %>% paste(., collapse="\n")
 
@@ -236,8 +236,7 @@ make.feedbac.doc <- function(student.res, assignment, output_folder, clean=T, qu
     sprintf('---
 title:  "Feedback: %s"
 subtitle: %s (%s)
-output: pdf_document:
-  keep_tex: false
+output: pdf_document
 ---\n\n', student.name, assignment, student.id),
     pander::pandoc.p.return(""),
     comments,
@@ -249,7 +248,12 @@ output: pdf_document:
   p <- paste0(output_folder, "/", outpath, '.Rmd')
 
   readr::write_file(output, p)
+  # clean=T;quiet=T
   rmarkdown::render(p, clean=clean, quiet = quiet)
+
+  texp <- paste0(output_folder, "/", outpath, '.tex')
+  message(texp)
+  system(sprintf("rm %s", texp))
   file.remove(p)
 }
 
@@ -330,7 +334,7 @@ savefeedback <- function(results, assignment, output_folder){
   dir.create(file.path(".", output_folder), showWarnings = F)
   purrr::map(subpths, ~ dir.create(file.path(".", .x), showWarnings = F))
   purrr::map2(res$results, subpths, ~ markback::make.feedbac.doc(.x, output_folder = .y, assignment = assignment))
-  system(sprintf("find %s -type f -name '*.tex' -delete"), output_folder)
+
   message("Feedback saved.")
 }
 
@@ -343,7 +347,7 @@ savefeedback <- function(results, assignment, output_folder){
 #' @param plot.results Create a density plot showing the mark distribution
 #' @return A dataframe containing the contents of matched markbook.
 matchmarks <- function(results, markbook, save.markbook=T, plot.results=T){
-  markbook <-   'Grades-PSY558 - 17SPM-Assignment part 1-459880.csv'
+  # markbook <-   'Grades-PSY558 - 17SPM-Assignment part 1-459880.csv'
   mbook <- suppressMessages(readr::read_csv(markbook))
 
   grds <- results$grades %>%
@@ -380,5 +384,5 @@ matchmarks <- function(results, markbook, save.markbook=T, plot.results=T){
 
 
 # res <- marksback('test.Rmd')
-# res$config
+# res[[2]][[1]]$comments %>% pander::pander()
 # savemarks(res)
