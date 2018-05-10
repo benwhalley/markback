@@ -1,9 +1,6 @@
-
 REGEX_GENERAL_COMMENTS <- "overall|general"
-GRADE_CUTS <- c(-1,0,15,25,38,42,45,48,52,55,58,62,65,68,77,88,100)
+GRADE_CUTS <- c(-Inf, 15,25,38,42,45,48,52,55,58,62,65,68,77,88, 100, Inf)
 GRADE_LABS <- c("N", "F-", "F", "F+", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+")
-
-
 # Read html text, export to html via pandoc, then return the string
 html2md <- function(html) {
   # html <- "<h1>basl</h1>"
